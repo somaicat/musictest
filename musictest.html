@@ -7,7 +7,9 @@
     <style>
     #displayResults {
       background-color: #00aaaa20;
-    display: none;
+    }
+    #resDiv {
+      display: none;
     }
     </style>
   </head>
@@ -16,11 +18,18 @@
     <button onclick="replayNotes()">Replay Notes</button>
     <button onclick="toggleDisplay()">Display Notes</button>
     <br><br>
-    <button onclick="guessSame()">Same</button>
-    <button onclick="guessDifferent()">Different</button>
+    <button id="guessSame" onclick="guessSame()" disabled>Same</button>
+    <button id="guessDifferent" onclick="guessDifferent()" disabled>Different</button>
     <br><br>
-    <label id="guess-label">Results</label>
-    <label id="displayResults"></label>
+    <label id="guess-label">Enter choice</label>
+    <br>
+    <label id="resTotals"></label>
+    <div id="resDiv">
+       <br><hr><br>
+        <label id="displayResults"></label>
+    </div>
+     <!--<br>
+    <label id="resAttempts"></label>-->
     <script>
       const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
       const scale = ['3', '4', '5', '6'];
@@ -28,9 +37,46 @@
       var note1
       var note2
       var displayingResults = false
+      var numCorrect = 0
+      var numAttempts=0
+
+      // DOMs
+      var guessLabel = document.getElementById('guess-label')
+      var displayResults = document.getElementById('displayResults')
+      var guessButtonSame = document.getElementById('guessSame')
+      var guessButtonDifferent = document.getElementById('guessDifferent')
+      var resTotals = document.getElementById('resTotals')
+      var resDiv = document.getElementById('resDiv')
+
+    //  var resAttempts = document.getElementById('resAttempts')
+      function disableButtons() {
+	  guessButtonSame.disabled = true
+	  guessButtonDifferent.disabled = true
+
+      }
+
+      function enableButtons()
+      {
+	  guessButtonSame.disabled = false
+	  guessButtonDifferent.disabled = false
+
+      }
+	
+	function enterData(success)
+	{
+	  numAttempts++
+	  if (success) {
+	    numCorrect++
+	  }
+	  disableButtons()
+	  resTotals.textContent = "Percent Correct: "+Math.floor(numCorrect/numAttempts*100.0)+"% ("+numCorrect+":"+(numAttempts-numCorrect)+")"
+//	  resAttempts.innerHTML += ("Guessed " + (success ? "incorrectly" : "correctly") + "<br>")
+	  }
+
 
       function playNotes() {
-	document.getElementById('guess-label').textContent = "Results";
+	enableButtons()
+	guessLabel.textContent = "Enter choice";
         note1 = notes[Math.floor(Math.random() * notes.length)];
 	if (Math.random() < 0.5) {
 	  note2 = note1
@@ -53,7 +99,7 @@
 	  note1 += scale1
 	  note2 += scale2
 
-	document.getElementById('displayResults').textContent = "Note 1: " + note1 + " Note 2: "+note2;
+	displayResults.textContent = "Note 1: " + note1 + " Note 2: "+note2;
 
         // Define a synth for playing the notes
         const synth = new Tone.Synth().toDestination();
@@ -66,7 +112,7 @@
 
       function toggleDisplay() {
 	displayingResults = !displayingResults;
-	document.getElementById('displayResults').style.display = displayingResults? 'block':'none';
+	resDiv.style.display = displayingResults? 'block':'none';
       }
 
       function replayNotes() {
@@ -82,19 +128,21 @@
       // Function to handle user guessing the notes were the same
       function guessSame() {
         if (isSame) {
-          document.getElementById('guess-label').textContent = 'Correct';
+          guessLabel.textContent = 'Correct';
         } else {
-          document.getElementById('guess-label').textContent = 'Incorrect';
+          guessLabel.textContent = 'Incorrect';
         }
+	enterData(isSame)
       }
 
       // Function to handle user guessing the notes were different
       function guessDifferent() {
         if (!isSame) {
-          document.getElementById('guess-label').textContent = 'Correct';
+          guessLabel.textContent = 'Correct';
         } else {
-          document.getElementById('guess-label').textContent = 'Incorrect';
+          guessLabel.textContent = 'Incorrect';
         }
+	enterData(!isSame)
       }
     </script>
   </body>
