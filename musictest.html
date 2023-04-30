@@ -2,12 +2,32 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Musical Note Test - Ash C.</title>
     <script src="https://unpkg.com/tone"></script>
     <style>
+    #topButtons {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    #controlDiv {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    #optionalDiv {
+      position: absolute;
+     
+      right: 0;
+    }
+   #modeDiv {
+      left: 0;
+    }
+    #manualDiv {
+    }
     .manualButtons {
       color: red;
-      float: right;
     }
     #displayResults {
       background-color: #00aaaa20;
@@ -18,12 +38,30 @@
     </style>
   </head>
   <body>
-    <button onclick="playNotes()">Pick Notes</button>
-    <button id="replayNotes" onclick="replayNotes()" disabled>Replay Notes</button>
-    <button onclick="toggleDisplay()">Display Notes</button>
+  <div id="topButtons">
+    <div id="controlDiv">
+      <button onclick="playNotes()">Pick Notes</button>
+      <button id="replayNotes" onclick="replayNotes()" disabled>Replay Notes</button>
+      <button id="toggleDispButton" onclick="toggleDisplay()">Display Notes</button>
+    </div>
+  </div>
 
-    <button class="manualButtons" onclick="playManualSame()">Play Same</button>
-    <button class="manualButtons" onclick="playManualDifferent()">Play Different</button>
+  <div id="optionalDiv">
+    <div id="modeDiv">
+      <select id="modeSelect" onchange="modeChanged()">
+        <option value="random" selected>Random Scales</option>
+        <option value="ltoh">Low to High</option>
+        <option value="htol">High to Low</option>
+      </select>
+    </div>
+   <br> 
+    <div id="manualDiv">
+      <button class="manualButtons" onclick="playManualSame()">Play Same</button>
+      <button class="manualButtons" onclick="playManualDifferent()">Play Different</button>
+    </div>
+
+  </div>
+
     <br><br>
     <button id="guessSame" onclick="guessSame()" disabled>Same</button>
     <button id="guessDifferent" onclick="guessDifferent()" disabled>Different</button>
@@ -39,13 +77,14 @@
     <label id="resAttempts"></label>-->
     <script>
       const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-      const scale = ['3', '4', '5', '6'];
+      const scale = [3, 4, 5, 6];
       var isSame
       var note1
       var note2
       var displayingResults = false
       var numCorrect = 0
       var numAttempts=0
+      var modeSetting = 0
 
       // DOMs
       var guessLabel = document.getElementById('guess-label')
@@ -55,6 +94,15 @@
       var resTotals = document.getElementById('resTotals')
       var resDiv = document.getElementById('resDiv')
       var replayButton = document.getElementById('replayNotes')
+      var toggleDispButton = document.getElementById('toggleDispButton')
+      var modeSelect = document.getElementById('modeSelect')
+
+      modeSelect.selectedIndex=0;
+
+      function modeChanged() {
+	modeSetting = modeSelect.selectedIndex;
+	console.log("Selected " + modeSetting);
+      }
 
     //  var resAttempts = document.getElementById('resAttempts')
       function disableButtons() {
@@ -89,8 +137,25 @@ displayResults.textContent = "Note 1: " + disNotes[0] + " Note 2: "+disNotes[1] 
 function selectNotes(sameNote) {
         var selNote1 = notes[Math.floor(Math.random() * notes.length)];
 	var selNote2
-	var selScale1 = scale[Math.floor(Math.random() * scale.length)];
+	var selScale1
 	var selScale2
+
+	switch (modeSetting) {
+	  case 0: // random
+	  	selScale1 = scale[Math.floor(Math.random() * scale.length)];
+		do {
+	   	  selScale2 = scale[Math.floor(Math.random() * scale.length)];
+	  	} while (selScale2 == selScale1);
+	  break;
+	  case 1: // Low to high
+	  	selScale1 = scale[Math.floor(Math.random() * (scale.length-1))];
+		selScale2 = selScale1+1;
+	  break;
+	  case 2: // High to low
+		selScale1 = scale[Math.floor(Math.random() * (scale.length-1)+1)];
+		selScale2 = selScale1-1;
+	  break;
+	}
 
 	if (sameNote) {
 	  selNote2 = selNote1
@@ -101,12 +166,6 @@ function selectNotes(sameNote) {
 	   while (selNote2 == selNote1);
 	}
 
-// Select any other scale for scale2
-	  do {
-	    selScale2 = scale[Math.floor(Math.random() * scale.length)];
-	  }
-	   while (selScale2 == selScale1);
-	  
 	  selNote1 += selScale1
 	  selNote2 += selScale2
 	  return [selNote1, selNote2]
@@ -136,6 +195,7 @@ function selectNotes(sameNote) {
       function toggleDisplay() {
 	displayingResults = !displayingResults;
 	resDiv.style.display = displayingResults? 'block':'none';
+	toggleDispButton.textContent = (displayingResults) ? "Hide Notes":"Display Notes"
       }
 
       function replayNotes() {
