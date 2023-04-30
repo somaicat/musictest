@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Musical Note Test - Ash C.</title>
+    <script src="https://unpkg.com/tone"></script>
+    <style>
+    #displayResults {
+      background-color: #00aaaa20;
+    display: none;
+    }
+    </style>
+  </head>
+  <body>
+    <button onclick="playNotes()">Pick Notes</button>
+    <button onclick="replayNotes()">Replay Notes</button>
+    <button onclick="toggleDisplay()">Display Notes</button>
+    <br><br>
+    <button onclick="guessSame()">Same</button>
+    <button onclick="guessDifferent()">Different</button>
+    <br><br>
+    <label id="guess-label">Results</label>
+    <label id="displayResults"></label>
+    <script>
+      const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const scale = ['3', '4', '5', '6'];
+      var isSame
+      var note1
+      var note2
+      var displayingResults = false
+
+      function playNotes() {
+	document.getElementById('guess-label').textContent = "Results";
+        note1 = notes[Math.floor(Math.random() * notes.length)];
+	if (Math.random() < 0.5) {
+	  note2 = note1
+	  isSame = true
+	} else { 
+	  do {
+	    note2 = notes[Math.floor(Math.random() * notes.length)];
+	  }
+	   while (note2 == note1);
+	  isSame = false
+	}
+
+	scale1 = scale[Math.floor(Math.random() * scale.length)];
+
+	  do {
+	    scale2 = scale[Math.floor(Math.random() * scale.length)];
+	  }
+	   while (scale2 == scale1);
+	  
+	  note1 += scale1
+	  note2 += scale2
+
+	document.getElementById('displayResults').textContent = "Note 1: " + note1 + " Note 2: "+note2;
+
+        // Define a synth for playing the notes
+        const synth = new Tone.Synth().toDestination();
+	const now = Tone.now()
+
+        // Play the notes
+        synth.triggerAttackRelease(note1, "8n", now);
+        synth.triggerAttackRelease(note2, "8n", now + 0.5);
+      }
+
+      function toggleDisplay() {
+	displayingResults = !displayingResults;
+	document.getElementById('displayResults').style.display = displayingResults? 'block':'none';
+      }
+
+      function replayNotes() {
+	const synth = new Tone.Synth().toDestination();
+	const now = Tone.now()
+
+        // Play the notes
+        synth.triggerAttackRelease(note1, "8n", now);
+        synth.triggerAttackRelease(note2, "8n", now + 0.5);
+
+      }
+
+      // Function to handle user guessing the notes were the same
+      function guessSame() {
+        if (isSame) {
+          document.getElementById('guess-label').textContent = 'Correct';
+        } else {
+          document.getElementById('guess-label').textContent = 'Incorrect';
+        }
+      }
+
+      // Function to handle user guessing the notes were different
+      function guessDifferent() {
+        if (!isSame) {
+          document.getElementById('guess-label').textContent = 'Correct';
+        } else {
+          document.getElementById('guess-label').textContent = 'Incorrect';
+        }
+      }
+    </script>
+  </body>
+</html>
+
