@@ -5,6 +5,10 @@
     <title>Musical Note Test - Ash C.</title>
     <script src="https://unpkg.com/tone"></script>
     <style>
+    .manualButtons {
+      color: red;
+      float: right;
+    }
     #displayResults {
       background-color: #00aaaa20;
     }
@@ -15,8 +19,11 @@
   </head>
   <body>
     <button onclick="playNotes()">Pick Notes</button>
-    <button onclick="replayNotes()">Replay Notes</button>
+    <button id="replayNotes" onclick="replayNotes()" disabled>Replay Notes</button>
     <button onclick="toggleDisplay()">Display Notes</button>
+
+    <button class="manualButtons" onclick="playManualSame()">Play Same</button>
+    <button class="manualButtons" onclick="playManualDifferent()">Play Different</button>
     <br><br>
     <button id="guessSame" onclick="guessSame()" disabled>Same</button>
     <button id="guessDifferent" onclick="guessDifferent()" disabled>Different</button>
@@ -47,6 +54,7 @@
       var guessButtonDifferent = document.getElementById('guessDifferent')
       var resTotals = document.getElementById('resTotals')
       var resDiv = document.getElementById('resDiv')
+      var replayButton = document.getElementById('replayNotes')
 
     //  var resAttempts = document.getElementById('resAttempts')
       function disableButtons() {
@@ -73,34 +81,49 @@
 //	  resAttempts.innerHTML += ("Guessed " + (success ? "incorrectly" : "correctly") + "<br>")
 	  }
 
+	  function updateDisplayedNotes(disNotes) {
+displayResults.textContent = "Note 1: " + disNotes[0] + " Note 2: "+disNotes[1] + " ["+(disNotes[0][0] === disNotes[1][0] ? "SAME" : "DIFFERENT")+"]";
+
+	  }
+
+function selectNotes(sameNote) {
+        var selNote1 = notes[Math.floor(Math.random() * notes.length)];
+	var selNote2
+	var selScale1 = scale[Math.floor(Math.random() * scale.length)];
+	var selScale2
+
+	if (sameNote) {
+	  selNote2 = selNote1
+	} else { 
+	  do {
+	    selNote2 = notes[Math.floor(Math.random() * notes.length)];
+	  }
+	   while (selNote2 == selNote1);
+	}
+
+// Select any other scale for scale2
+	  do {
+	    selScale2 = scale[Math.floor(Math.random() * scale.length)];
+	  }
+	   while (selScale2 == selScale1);
+	  
+	  selNote1 += selScale1
+	  selNote2 += selScale2
+	  return [selNote1, selNote2]
+  }
 
       function playNotes() {
 	enableButtons()
+	replayButton.disabled = false
 	guessLabel.textContent = "Enter choice";
-        note1 = notes[Math.floor(Math.random() * notes.length)];
 	if (Math.random() < 0.5) {
-	  note2 = note1
 	  isSame = true
-	} else { 
-	  do {
-	    note2 = notes[Math.floor(Math.random() * notes.length)];
-	  }
-	   while (note2 == note1);
-	  isSame = false
-	}
+	} else { isSame = false }
+	var notes = selectNotes(isSame)
+	note1 = notes[0]
+	note2 = notes[1]
 
-	scale1 = scale[Math.floor(Math.random() * scale.length)];
-
-	  do {
-	    scale2 = scale[Math.floor(Math.random() * scale.length)];
-	  }
-	   while (scale2 == scale1);
-	  
-	  note1 += scale1
-	  note2 += scale2
-
-	displayResults.textContent = "Note 1: " + note1 + " Note 2: "+note2;
-
+	displayResults.textContent = "Note 1: " + note1 + " Note 2: "+note2 + " ["+(isSame ? "SAME" : "DIFFERENT")+"]";
         // Define a synth for playing the notes
         const synth = new Tone.Synth().toDestination();
 	const now = Tone.now()
@@ -118,13 +141,31 @@
       function replayNotes() {
 	const synth = new Tone.Synth().toDestination();
 	const now = Tone.now()
-
+	displayResults.textContent = "Note 1: " + note1 + " Note 2: "+note2 + " ["+(isSame ? "SAME" : "DIFFERENT")+"]";
         // Play the notes
         synth.triggerAttackRelease(note1, "8n", now);
         synth.triggerAttackRelease(note2, "8n", now + 0.5);
 
       }
+      function playManualDifferent() {
+	const notes = selectNotes(false)
+	const synth = new Tone.Synth().toDestination();
+	const now = Tone.now()
+	updateDisplayedNotes(notes)
+        // Play the notes
+        synth.triggerAttackRelease(notes[0], "8n", now);
+        synth.triggerAttackRelease(notes[1], "8n", now + 0.5);
+      }
+      function playManualSame() {
+	const notes = selectNotes(true)
+	const synth = new Tone.Synth().toDestination();
+	const now = Tone.now()
+        updateDisplayedNotes(notes)
+	// Play the notes
+        synth.triggerAttackRelease(notes[0], "8n", now);
+        synth.triggerAttackRelease(notes[1], "8n", now + 0.5);
 
+      }
       // Function to handle user guessing the notes were the same
       function guessSame() {
         if (isSame) {
