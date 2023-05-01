@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Musical Note Test - Ash C.</title>
+    <title>Musical Note Test - By Ash C. & Matt F.</title>
     <script src="https://unpkg.com/tone"></script>
     <style>
     #topButtons {
@@ -42,14 +42,24 @@
     <div id="controlDiv">
       <button onclick="playNotes()">Pick Notes</button>
       <button id="replayNotes" onclick="replayNotes()" disabled>Replay Notes</button>
-      <button id="toggleDispButton" onclick="toggleDisplay()">Display Notes</button>
+      <button id="toggleDispButton" onclick="toggleDisplay()">Show Notes</button>
     </div>
   </div>
 
   <div id="optionalDiv">
+  <label>Octave Randomizer</label>
     <div id="modeDiv">
+    <label>1st</label>
+      <select id="firstOctaveSelect" onchange="firstOctaveChanged()">
+        <option value="FOR" selected>Random</option>
+	<option value="FO3">3rd</option>
+	<option value="FO4">4th</option>
+	<option value="FO5">5th</option>
+	<option value="FO6">6th</option>
+      </select>
+      <label>2nd</label>
       <select id="modeSelect" onchange="modeChanged()">
-        <option value="random" selected>Random Scales</option>
+        <option value="random" selected>Random</option>
         <option value="ltoh">Low to High</option>
         <option value="htol">High to Low</option>
       </select>
@@ -85,6 +95,7 @@
       var numCorrect = 0
       var numAttempts=0
       var modeSetting = 0
+      var firstOctaveSetting = 0
 
       // DOMs
       var guessLabel = document.getElementById('guess-label')
@@ -96,12 +107,46 @@
       var replayButton = document.getElementById('replayNotes')
       var toggleDispButton = document.getElementById('toggleDispButton')
       var modeSelect = document.getElementById('modeSelect')
+      var firstOctaveSelect = document.getElementById('firstOctaveSelect')
 
+      // NOTE: If new octaves are ever added this hard coded value needs to be fixed
+      const firstOctaveSelectionOffset = 2
+
+      // NOTE: Should I add a modeChanged() call to ensure the 1stoct options are all enabled? Is that guarenteed to reset on reload? Dunno
       modeSelect.selectedIndex=0;
+      firstOctaveSelect.selectedIndex=0;
 
+      function firstOctaveChanged() {
+	firstOctaveSetting = firstOctaveSelect.selectedIndex;
+	console.log("Selected first octave " + firstOctaveSetting);
+      }
       function modeChanged() {
+	// NOTE: Having this hardcoded is also undesirable
+	switch (modeSelect.selectedIndex) {
+	  case 0:
+	  firstOctaveSelect.options[1].disabled = false
+	  firstOctaveSelect.options[4].disabled = false
+	  break;
+	  case 1:
+	   firstOctaveSelect.options[1].disabled = false
+	   firstOctaveSelect.options[4].disabled = true
+	   if (firstOctaveSelect.selectedIndex === 4) {
+	     firstOctaveSelect.selectedIndex = 0
+	     firstOctaveChanged()
+	   }
+	  break;
+	  case 2:
+	   firstOctaveSelect.options[4].disabled = false
+	   firstOctaveSelect.options[1].disabled = true
+	   if (firstOctaveSelect.selectedIndex === 1) { 
+	     firstOctaveSelect.selectedIndex = 0
+	     firstOctaveChanged()
+	   }
+	  break;
+	}
+
 	modeSetting = modeSelect.selectedIndex;
-	console.log("Selected " + modeSetting);
+	console.log("Selected randomization mode " + modeSetting);
       }
 
     //  var resAttempts = document.getElementById('resAttempts')
@@ -142,20 +187,21 @@ function selectNotes(sameNote) {
 
 	switch (modeSetting) {
 	  case 0: // random
-	  	selScale1 = scale[Math.floor(Math.random() * scale.length)];
+	  	selScale1 = (firstOctaveSetting === 0) ? scale[Math.floor(Math.random() * scale.length)] : (firstOctaveSetting+firstOctaveSelectionOffset)
 		do {
 	   	  selScale2 = scale[Math.floor(Math.random() * scale.length)];
 	  	} while (selScale2 == selScale1);
 	  break;
 	  case 1: // Low to high
-	  	selScale1 = scale[Math.floor(Math.random() * (scale.length-1))];
+	  	selScale1 = (firstOctaveSetting === 0) ? scale[Math.floor(Math.random() * (scale.length-1))] : (firstOctaveSetting+firstOctaveSelectionOffset)
 		selScale2 = selScale1+1;
 	  break;
 	  case 2: // High to low
-		selScale1 = scale[Math.floor(Math.random() * (scale.length-1)+1)];
+		selScale1 = (firstOctaveSetting === 0) ? scale[Math.floor(Math.random() * (scale.length-1)+1)] : (firstOctaveSetting+firstOctaveSelectionOffset)
 		selScale2 = selScale1-1;
 	  break;
 	}
+	
 
 	if (sameNote) {
 	  selNote2 = selNote1
@@ -195,7 +241,7 @@ function selectNotes(sameNote) {
       function toggleDisplay() {
 	displayingResults = !displayingResults;
 	resDiv.style.display = displayingResults? 'block':'none';
-	toggleDispButton.textContent = (displayingResults) ? "Hide Notes":"Display Notes"
+	toggleDispButton.textContent = (displayingResults) ? "Hide Notes":"Show Notes"
       }
 
       function replayNotes() {
